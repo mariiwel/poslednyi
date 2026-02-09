@@ -119,6 +119,8 @@
             color: white;
             left: 20%;
             animation: heartbeat 1.5s ease-in-out infinite;
+            transform-origin: center;
+            transition: transform 0.3s ease, left 0.3s ease;
         }
         
         @keyframes heartbeat {
@@ -132,6 +134,8 @@
             border: 3px solid #ff4081;
             right: 20%;
             animation: shake 3s ease-in-out infinite;
+            transform-origin: center;
+            transition: transform 0.3s ease, font-size 0.3s ease;
         }
         
         @keyframes shake {
@@ -231,7 +235,7 @@
     <script>
         // Тексты для кнопки "НЕТ"
         const noTexts = [
- "Ты офигел?",
+            "Ты офигел?",
             "Подумай еще!",
             "Точно?",
             "Может передумаешь?",
@@ -267,8 +271,8 @@
         
         // Переменные
         let clickCount = 0;
-        let yesSize = 1;
-        let noSize = 1;
+        let yesScale = 1;
+        let noScale = 1;
         let moveInterval = null;
         let isCelebrating = false;
         
@@ -290,11 +294,7 @@
             noBtn.style.left = `${newX}px`;
             noBtn.style.top = `${newY}px`;
             noBtn.style.position = 'absolute';
-
-            // Уменьшаем кнопку
-            noSize = Math.max(0.3, noSize - 0.02);
-            noBtn.style.transform = `translateY(-50%) scale(${noSize})`;
-            noBtn.style.fontSize = `${Math.max(0.8, 1.7 - clickCount * 0.05)}rem`;
+            noBtn.style.right = 'auto';
         }
         
         // Автоперемещение
@@ -337,6 +337,25 @@
             setInterval(createConfetti, 1500);
         }
         
+        // Функция для увеличения кнопки ДА и уменьшения НЕТ
+        function updateButtonSizes() {
+            // Увеличиваем кнопку ДА (максимум в 2 раза)
+            yesScale = Math.min(2, 1 + clickCount * 0.08);
+            yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
+            
+            // Уменьшаем кнопку НЕТ (минимум 0.4 от оригинала)
+            noScale = Math.max(0.4, 1 - clickCount * 0.04);
+            noBtn.style.transform = `translateY(-50%) scale(${noScale})`;
+            
+            // Уменьшаем шрифт кнопки НЕТ
+            const fontSize = Math.max(0.8, 1.7 - clickCount * 0.05);
+            noBtn.style.fontSize = `${fontSize}rem`;
+            
+            // Сдвигаем кнопку ДА вправо при увеличении (чтобы вытеснять НЕТ)
+            const leftPosition = Math.max(5, 20 - clickCount * 0.5);
+            yesBtn.style.left = `${leftPosition}%`;
+        }
+        
         // Кнопка ДА
         yesBtn.addEventListener('click', function() {
             question.textContent = "💕 УРА! ТЫ САМЫЙ ЛУЧШИЙ! 💕";
@@ -360,9 +379,8 @@
         noBtn.addEventListener('click', function() {
             clickCount++;
             
-            // Увеличиваем ДА
-            yesSize += 0.1;
-            yesBtn.style.transform = `translateY(-50%) scale(${yesSize})`;
+            // Обновляем размеры кнопок
+            updateButtonSizes();
             
             // Меняем текст НЕТ
             if (clickCount <= noTexts.length) {
@@ -380,11 +398,16 @@
             // После всех текстов
             if (clickCount >= noTexts.length) {
                 setTimeout(() => {
-                    noBtn.style.opacity = '0';
+                    noBtn.style.opacity = '0.5';
                     yesBtn.textContent = "ВСЕ РАВНО ДА!";
                     yesBtn.style.fontSize = '2rem';
                     question.textContent = "😉 ВЫБОР СДЕЛАН ЗА ТЕБЯ!";
                     clearInterval(moveInterval);
+                    
+                    // Делаем кнопку ДА огромной
+                    yesScale = 2.5;
+                    yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
+                    yesBtn.style.left = '30%';
                 }, 300);
             }
         });
